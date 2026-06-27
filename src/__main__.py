@@ -1,5 +1,6 @@
 import os
 import time
+import json
 import argparse
 from src.json_loadr import load_function_definition, load_prompt
 from src.constrained_decoding import build_system_prompt, load_vocabulary, build_json_valid_ids, extract_complete_json, get_approve_valid_token
@@ -75,13 +76,14 @@ def main():
 		all_generated = []
 
 		clean_json = None
-		all_generated.extend(model.encode('{"name: "')[0].tolist())
+		parsed = {"name": "none", "args": {}}
+		all_generated.extend(model.encode('{"name": "')[0].tolist())
 		for _ in range(50):
 			logits = model.get_logits_from_input_ids(generated_ids + all_generated)
 			next_id = get_approve_valid_token(logits, valid_ids)
 			all_generated.append(next_id)
 			text = model.decode(all_generated)
-			print(text)
+			# print(text)
 			clean_json = extract_complete_json(text)
 			if clean_json:
 				try:
@@ -89,9 +91,6 @@ def main():
 					break
 				except Exception:
 					pass
-
-		if not clean_json:
-			parsed = {"name": "none", "args": {}}
 
 		all_results.append({
 			"prompt": prompt,
@@ -107,16 +106,18 @@ def main():
 	total_time = time.time() - start_time
 	all_parsed_result = [result for result in all_results if result["name"] != "none"]
 
-	os.makedirs(os.path.dirname(args.output, exist_ok=True))
+	os.makedirs(os.path.dirname(args.output), exist_ok=True)
 	with open(args.output, 'w', encoding="utf-8") as f:
 		json.dump(all_parsed_result, f, ensure_ascii=False, indent=2)
 	print(f"The result is saved in {args.output}")
 	print("Completed")
-	print(f"Total time: {total_time:.2} second")
+	print(f"Total time: {total_time:.2f} second")
 
 
 if __name__ == "__main__":
 	try:
 		main()
-	except BaseException as e:
+	except KeyboardInterrupt as e:
+		print(f"Program Stoped.")
+	except Exception as e:
 		print(f"Error: {e}")
