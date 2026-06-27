@@ -5,6 +5,7 @@ description = "Constrained Decoding Pipeline for Safe JSON Function Calling"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "numpy>=2.2.6",
     "pydantic>=2.0.0",
     "transformers>=4.35.0",
     "torch>=2.0.0",
