@@ -10,5 +10,6 @@ dependencies = [
     "transformers>=4.35.0",
     "torch>=2.0.0",
     "flake8>=6.0.0",
-    "mypy>=1.0.0"
+    "mypy>=1.0.0",
+    "rich>=14.0.0"
 ]
