@@ -14,7 +14,7 @@ from src.constrained_decoding import (build_system_prompt,
 console = Console()
 
 
-def parsing_args():
+def parsing_args() -> argparse.Namespace:
     pars = argparse.ArgumentParser(
         description="Constrained Decoding Pipeline for "
         "Safe JSON Function Calling"
@@ -34,7 +34,7 @@ def parsing_args():
     return pars.parse_args()
 
 
-def main():
+def main() -> None:
     console.print("\n[bold purple]=== Program Start ===[/bold purple]\n")
     args = parsing_args()
 

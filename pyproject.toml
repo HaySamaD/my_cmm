@@ -13,3 +13,8 @@ dependencies = [
     "mypy>=1.0.0",
     "rich>=14.0.0"
 ]
+
+[[tool.mypy.overrides]]
+module = "llm_sdk.*"
+ignore_errors = true
+follow_imports = "skip"

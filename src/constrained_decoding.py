@@ -1,12 +1,15 @@
 from llm_sdk import Small_LLM_Model
 import json
+from typing import Set, Any
 
 
-def get_approve_valid_token(logits, valid_ids):
+def get_approve_valid_token(logits: Any, valid_ids: Set[int]) -> int:
+    """Returns the valid token ID that maximizes the logits value."""
     return max(valid_ids, key=lambda i: logits[i])
 
 
-def extract_complete_json(text: str):
+def extract_complete_json(text: str) -> Any:
+    """Extracts the first matched valid balancing closure of {...}."""
     start = text.find("{")
     if start == -1:
         return None
@@ -23,7 +26,8 @@ def extract_complete_json(text: str):
     return None
 
 
-def build_json_valid_ids(vocab: dict):
+def build_json_valid_ids(vocab: dict) -> Set[int]:
+    """Filters vocabulary to only allow secure structural JSON characters."""
     safe_json = set(
         'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
         '0123456789*_.,:-+/\'!?()[]{}"ĠĊ'
@@ -35,7 +39,7 @@ def build_json_valid_ids(vocab: dict):
     return valid
 
 
-def load_vocabulary(model: Small_LLM_Model):
+def load_vocabulary(model: Small_LLM_Model) -> Any:
     vocab_path = model.get_path_to_tokenizer_file()
     with open(vocab_path, 'r', encoding="utf-8") as f:
         toke_data = json.load(f)
@@ -43,7 +47,7 @@ def load_vocabulary(model: Small_LLM_Model):
     return raw_vocab
 
 
-def build_system_prompt(functions):
+def build_system_prompt(functions: Any) -> str:
     lines = [
         "STRICT SYSTEM RULE: Use ONLY a matching "
         "function from the list below.",

@@ -1,9 +1,11 @@
 from src.model.functions_definition import FunctionDefinition
 from src.model.prompt import PromptCase
 import json
+from typing import List
 
 
-def load_function_definitions(path: str):
+def load_function_definitions(path: str) -> List[FunctionDefinition]:
+    """Loads a collection of JSON function definitions."""
     try:
         with open(path, 'r', encoding="utf-8") as f:
             data = json.load(f)
@@ -14,7 +16,8 @@ def load_function_definitions(path: str):
         raise RuntimeError(f"Invalid JSON file in {path}")
 
 
-def load_test_prompts(path: str):
+def load_test_prompts(path: str) -> List[PromptCase]:
+    """Loads a collection of input query test prompts."""
     try:
         with open(path, 'r', encoding="utf-8") as f:
             data = json.load(f)
