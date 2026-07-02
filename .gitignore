@@ -12,6 +12,7 @@ wheels/
 .uv_cache/
 
 # Developer Tools & Linters Caches
+moulinette/
 .mypy_cache/
 .pytest_cache/
 .ruff_cache/

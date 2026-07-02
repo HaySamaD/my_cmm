@@ -3,6 +3,7 @@ import time
 import json
 import argparse
 from rich.console import Console
+from typing import Any, cast
 from llm_sdk import Small_LLM_Model
 from src.json_loader import load_function_definitions, load_test_prompts
 from src.constrained_decoding import (build_system_prompt,
@@ -27,7 +28,7 @@ def parsing_args() -> argparse.Namespace:
                       default="data/input/functions_definition.json")
     pars.add_argument("--output",
                       type=str,
-                      default="data/output/functions_output.json")
+                      default="data/output/function_calling_results.json")
     pars.add_argument("--model",
                       type=str,
                       default="Qwen/Qwen3-0.6B")
@@ -112,10 +113,18 @@ def main() -> None:
                 "function call[/bold red]")
         print()
 
+        extracted_args = cast(dict[Any, Any], parsed.get("args", {}))
+        cleaned_parameters = {}
+        for key, value in extracted_args.items():
+            if type(value) in (int, float):
+                cleaned_parameters[key] = float(value)
+            else:
+                cleaned_parameters[key] = value
+
         all_results.append({
             "prompt": prompt,
             "name": parsed.get("name", "none"),
-            "args": parsed.get("args", {})
+            "parameters": cleaned_parameters
         })
 
     total_time = time.time() - start_time
