@@ -1,7 +1,7 @@
-export UV_CACHE_DIR = /goinfre/$(USER)/.cache/uv
-export HF_HOME = /goinfre/$(USER)/hf_cache
-export TRANSFORMERS_CACHE = /goinfre/$(USER)/hf_cache/transformers
-export TORCH_HOME = /goinfre/$(USER)/torch_cache
+# export UV_CACHE_DIR = /goinfre/$(USER)/.cache/uv
+# export HF_HOME = /goinfre/$(USER)/hf_cache
+# export TRANSFORMERS_CACHE = /goinfre/$(USER)/hf_cache/transformers
+# export TORCH_HOME = /goinfre/$(USER)/torch_cache
 
 PYTHON = uv run python
 MODULE = src

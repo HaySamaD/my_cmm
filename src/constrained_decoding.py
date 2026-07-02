@@ -1,11 +1,16 @@
 from llm_sdk import Small_LLM_Model
 import json
+import numpy as np
 from typing import Set, Any
 
 
 def get_approve_valid_token(logits: Any, valid_ids: Set[int]) -> int:
     """Returns the valid token ID that maximizes the logits value."""
-    return max(valid_ids, key=lambda i: logits[i])
+    logits_array = np.array(logits, dtype=np.float32)
+    masked_logits = np.full_like(logits_array, -float('inf'))
+    valid_list = list(valid_ids)
+    masked_logits[valid_list] = logits_array[valid_list]
+    return int(np.argmax(masked_logits))
 
 
 def extract_complete_json(text: str) -> Any:
