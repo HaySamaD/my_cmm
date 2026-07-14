@@ -8,7 +8,6 @@ from llm_sdk import Small_LLM_Model
 from src.json_loader import load_function_definitions, load_test_prompts
 from src.constrained_decoding import (build_system_prompt,
                                       load_vocabulary,
-                                      build_json_valid_ids,
                                       extract_complete_json,
                                       get_approve_valid_token)
 
@@ -22,16 +21,24 @@ def parsing_args() -> argparse.Namespace:
     )
     pars.add_argument("--input",
                       type=str,
-                      default="data/input/function_calling_tests.json")
+                      default="data/input/function_calling_tests.json",
+                      help="Path to the input JSON file containing natural "
+                      "language prompts to process.")
     pars.add_argument("--functions_definition",
                       type=str,
-                      default="data/input/functions_definition.json")
+                      default="data/input/functions_definition.json",
+                      help="Path to the JSON file containing available "
+                      "function definitions and metadata.")
     pars.add_argument("--output",
                       type=str,
-                      default="data/output/function_calling_results.json")
+                      default="data/output/function_calling_results.json",
+                      help="Path where the final constrained JSON results will"
+                      " be saved.")
     pars.add_argument("--model",
                       type=str,
-                      default="Qwen/Qwen3-0.6B")
+                      default="Qwen/Qwen3-0.6B",
+                      help="Name or path of the local LLM model to use for "
+                      "inference.")
     return pars.parse_args()
 
 
@@ -59,7 +66,7 @@ def main() -> None:
 
     print("Building valid token IDs...")
     vocab = load_vocabulary(model)
-    valid_ids = build_json_valid_ids(vocab)
+    # valid_ids = build_json_valid_ids(vocab)
 
     all_results = []
     start_time = time.time()
@@ -86,9 +93,12 @@ def main() -> None:
         print('{"name": "', end="", flush=True)
 
         for _ in range(50):
+            current_generated_text = model.decode(all_generated)
             logits = model.get_logits_from_input_ids(
                 generated_ids + all_generated)
-            next_id = get_approve_valid_token(logits, valid_ids)
+            next_id = get_approve_valid_token(logits,
+                                              current_generated_text,
+                                              vocab)
             all_generated.append(next_id)
 
             print(model.decode([next_id]), end="", flush=True)
