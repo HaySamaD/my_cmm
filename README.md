@@ -4,71 +4,66 @@ A structured, production-grade Python inference pipeline that guarantees **100% 
 
 ---
 
-## The Engineering Challenge (Building the Wheel from Scratch)
-This project is not a simple integration of existing LLM frameworks. It is a **pure systems engineering challenge** where all high-level tools designed to abstract away model complexity were strictly prohibited. 
+## The Architectural Challenge: Reinventing the Wheel from Scratch
 
-* **From Scratch Architecture:** Every component from the custom Token-Level Constrained Decoding State Machine to the logit masking engine was architected and implemented manually. 
-* **"Reinventing the Wheel":** By bypassing standard high-level libraries, we achieved a deeper understanding of how LLMs construct responses at the probability distribution level, allowing us to build a deterministic, high-performance engine that operates closer to the metal.
-* **Deep Technical Documentation:** For those interested in the underlying system mechanics and low-level architectural decisions, please refer to the comprehensive design specification in **`doc/subject.pdf`**.
+Lightweight models (like `Qwen/Qwen3-0.6B`) inherently fail at producing structured JSON outputs through prompting alone. They constantly break downstream production systems by adding natural language prose, trailing commas, or missing key braces. 
+
+To overcome this, **this pipeline solves the problem at the compiler and inference layer rather than the prompt layer**. 
+
+### The Real Challenge: No Frameworks Allowed
+The absolute constraint of this engineering showcase was the **strict prohibition of all standard, high-level structured generation tools** (such as Outlines, Instructor, Guidance, or vLLM grammar engines). Every layer of this project had to be built completely **from scratch**:
+* Intercepting next-token probabilities at the raw model logit layer manually.
+* Managing the auto-regressive state arrays token-by-token directly inside the generation loop.
+* Isolating tokenizer ambiguities (like BPE whitespace variations) without framework abstractions.
+
+By bypassing modern framework shortcuts, this system stands as a pure proof of low-level software engineering excellence, forcing deterministic grammar validation directly onto raw matrix outputs. For full architectural specifications and task boundaries, refer directly to **`doc/subject.pdf`**.
 
 ---
 
 ## Overview
 
-Small language models (such as `Qwen/Qwen3-0.6B`) inherently struggle to adhere to strict structural constraints through prompt engineering alone. They frequently introduce trailing commas, verbose text prose, or hallucinated fields that break automated API and database integrations. 
-
-**Call Me Maybe** addresses this limitation at the compiler/inference layer rather than the prompt layer. By executing a custom **Token-Level Constrained Decoding State Machine**, the pipeline intercepts the model's raw probability distributions (logits) at every auto-regressive generation step. It applies a dynamic vocabulary mask to suppress non-compliant tokens, forcing the model to select exclusively from characters that preserve both valid JSON syntax and the target function's signature.
+**Call Me Maybe** tracks the token-generation lifecycle via a custom **Token-Level Constrained Decoding State Machine**. By injecting an active constraint mask before the model selects its next token piece, it applies a dynamic vocabulary filter that completely suppresses non-compliant outputs, ensuring flawless execution boundaries.
 
 ### Key Architectural Pillars
-* **Logit Interception Layer:** Intercepts next-token scores via `get_logits_from_input_ids()` before any token selection takes place.
-* **Deterministic Grammar Enforcer:** Evaluates bracket balance, active dictionary keys, and expected parameter datatypes dynamically.
-* **Modular Codebase Separation:** Engineered with a clean separation of concerns across dedicated source domains (`src/constrained_decoding.py`, `src/json_loader.py`) for production stability.
-* **Flawless Structural Delivery:** Delivers a strict 100% successful JSON parsing rate without relying on aggressive retry wrappers or secondary prompt cleaning.
+* **Logit Interception Layer:** Intercepts next-token scores via `get_logits_from_input_ids()` before token sampling occurs.
+* **Deterministic Grammar Enforcer:** Evaluates bracket balance, dictionary keys, and schema datatypes character-by-character on the fly.
+* **Clean Codebase Isolation:** Decoupled architecture separating token decoding, dataset ingestion, and local hardware SDK utilities cleanly.
 
 ---
 
 ## Modular System Architecture
 
-The pipeline is split into explicit decoupled modules designed for optimal reliability:
+The pipeline is split into explicit decoupled modules designed for optimal maintenance safety:
 * **`src/constrained_decoding.py`:** Core finite-state machine (FSM) enforcing structural token masking profiles byte-by-byte.
-* **`src/json_loader.py`:** Handles safe dynamic input extraction and validation.
+* **`src/json_loader.py`:** Handles safe structural input extraction and dynamic payload evaluation.
 * **`llm_sdk/`:** Low-level SDK wrapper managing local model inference using Hugging Face transformers, raw tensor evaluations, and automated device tracking (`mps`/`cuda`/`cpu`).
-* **`data/`:** Environment assets repository separating baseline function registries from testing array maps.
 
 ---
 
-## Technical Decisions & Implementation Strategy
+## Technical Decisions & Optimization
 
-### 1. Finite-State JSON Parser (Logit Masking)
-The core decoder tracks the generation state through character-level context invariants (e.g., inside a string literal, extracting a key, or parsing a primitive value). If a generated sequence threatens to violate the expected JSON structure or the functional parameters defined in `functions_definition.json`:
-* Forbidden token indices are immediately hard-masked by applying a secure float ceiling penalty of `-100000.0`.
-* The downstream sampling layer deterministically selects the highest remaining logit index, guaranteeing safe state changes across JSON syntax borders.
-
-### 2. Handling Tokenizer Ambiguities
-Byte-Pair Encoding (BPE) tokenizers frequently merge structural symbols with leading whitespace context (e.g., ` "name"` as a single token piece). Rather than relying on rigid regex matching, this system builds an inverted index map of the model's vocabulary during initialization to instantly isolate valid nested tokens.
-
-### 3. Latency Optimization: Token Generation Cap
-To balance inference latency and prevent edge-case infinite loops during raw causal text generation, a native execution flag `--max_tokens` is integrated at the command-line entry point. This parameter strictly limits the maximum tokens to generate for the answer, protecting compute budgets on specialized inference clusters.
+### Token generation Latency Cap
+To balance execution speeds and guarantee system stability, a custom execution flag `--max_tokens` is integrated at the command-line entry point. This parameter strictly forces a ceiling limit on the generated tokens to prevent runtime token inflation, isolate infinite loops, and optimize resource distribution on compute instances.
 
 ---
 
 ## Getting Started
 
 ### Installation
-Ensure your host environment features `Python >= 3.10` and `uv` for fast dependency management. Synchronize project environments via:
+Ensure your host environment features `Python >= 3.10` and `uv` for dependency isolation. Synchronize environment components via:
 
 ```bash
 make install
 ```
 
 ### Execution
-Run the verification batch pipeline using default local assets:
+Run the baseline automated evaluation array using default local assets:
 
 ```bash
 make run
 ```
 
-For customized payloads, custom token constraints, and custom model evaluations, interface directly with the package execution layout via named command-line arguments:
+For customized inputs, runtime token caps, and custom model evaluations, run the executable module layout directly with target tags:
 
 ```bash
 uv run python -m src \
@@ -80,20 +75,23 @@ uv run python -m src \
 ```
 
 ### Quality Assurance & Linting
-Validate strict static assurance and type syntax rules using standard evaluation rules:
+Enforce strict formatting validation and type system checks against code boundaries:
 
 ```bash
-# Run standard flake8 checks and type evaluations
+# Run standard flake8 style checks and partial mypy type tests
 make lint
+
+# Enforce complete static assurance via strict typing layouts
+make lint-strict
 ```
 
 ---
 
 ## Performance & Evaluation
 
-* **Syntax Reliability:** Achieve a flawless **100% Valid JSON Parse Rate** across complex nested argument spaces.
-* **Intent Extraction Accuracy:** **>90% Semantic Accuracy** matching natural language prompts to target register signatures.
-* **Latency Benchmarks:** Hardware-safe vector masking processes the complete evaluation array in **under 60 seconds** on standard hardware.
+* **Syntax Reliability:** **100% Successful JSON Parse Rate** with zero exceptions across evaluation arrays.
+* **Intent Extraction Accuracy:** **>90% Semantic Accuracy** matching natural prompts to functional schemas.
+* **Latency Benchmarks:** High-throughput tensor masking maps complex argument parameters in **under 60 seconds** on core acceleration backends.
 
 ---
 
@@ -131,4 +129,16 @@ Total time: 1.24 seconds
 ```
 
 ---
-*Developed as a high-performance system engineering showcase for the 42 Network Curriculum. See `doc/subject.pdf` for full technical disclosure.*
+
+## Resources & Core References
+
+### Community & Architecture Discussions
+* **Stack Overflow:** Deep technical threads regarding logit manipulation matrix bounds, NaN tensor mitigation, and token-mask performance overhead.
+* **Reddit (r/LocalLLaMA & r/MachineLearning):** Discussions on the execution speed of raw loop constraint structures on sub-1B lightweight topologies.
+* **Hugging Face Transformers Documentation:** Low-level mechanics of transformers generation steps and output logit distributions.
+
+### AI Utility Disclosure
+Artificial intelligence systems were utilized during development exclusively to accelerate repetitive boilerplate tasks, resolve explicit static typing hint boundaries during strict `mypy` sweeps, and format PEP 257-compliant docstrings across open boundaries.
+
+---
+*Developed as a high-performance system engineering showcase for the 42 Network Curriculum. See `doc/subject.pdf` for full project requirements.*
