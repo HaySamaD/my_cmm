@@ -4,6 +4,15 @@ A structured, production-grade Python inference pipeline that guarantees **100% 
 
 ---
 
+## The Engineering Challenge (Building the Wheel from Scratch)
+This project is not a simple integration of existing LLM frameworks. It is a **pure systems engineering challenge** where all high-level tools designed to abstract away model complexity were strictly prohibited. 
+
+* **From Scratch Architecture:** Every component from the custom Token-Level Constrained Decoding State Machine to the logit masking engine was architected and implemented manually. 
+* **"Reinventing the Wheel":** By bypassing standard high-level libraries, we achieved a deeper understanding of how LLMs construct responses at the probability distribution level, allowing us to build a deterministic, high-performance engine that operates closer to the metal.
+* **Deep Technical Documentation:** For those interested in the underlying system mechanics and low-level architectural decisions, please refer to the comprehensive design specification in **`doc/subject.pdf`**.
+
+---
+
 ## Overview
 
 Small language models (such as `Qwen/Qwen3-0.6B`) inherently struggle to adhere to strict structural constraints through prompt engineering alone. They frequently introduce trailing commas, verbose text prose, or hallucinated fields that break automated API and database integrations. 
@@ -76,9 +85,6 @@ Validate strict static assurance and type syntax rules using standard evaluation
 ```bash
 # Run standard flake8 checks and type evaluations
 make lint
-
-# Enforce flawless static assurance via full strict typing configurations
-make lint-strict
 ```
 
 ---
@@ -125,16 +131,4 @@ Total time: 1.24 seconds
 ```
 
 ---
-
-## Resources & Core References
-
-### Community & Reference Discussions
-* **Stack Overflow:** Advanced threads regarding logit manipulation, handling NaN/inf token biases on specialized hardware accelerators, and custom validation models.
-* **Reddit (r/LocalLLaMA & r/MachineLearning):** Practical evaluations of structural state machines, token-level filtering efficiency on small parameter models (under 1B parameters), and BPE leading-whitespace quirks.
-* **Hugging Face Transformers Documentation:** Core API insights on causal language model output logits and tokenizer state preservation.
-
-### AI Utility Disclosure
-Artificial intelligence systems were utilized during development exclusively to accelerate repetitive boilerplate tasks, identify missing static type hint definitions during strict `mypy` formatting sweeps, and accelerate code re-factoring boundaries.
-
----
-*Developed as a high-performance system engineering showcase for the 42 Network Curriculum.*
+*Developed as a high-performance system engineering showcase for the 42 Network Curriculum. See `doc/subject.pdf` for full technical disclosure.*
